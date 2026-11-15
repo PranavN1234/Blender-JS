@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f6f4ee" />
+    <meta name="description" content="A hands-on Blender to React Three Fiber experiment. Open a treasure chest and explore its hinge." />
+    <title>Chest Lab · Blender → Browser</title>
+    <link rel="stylesheet" href="./style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@19.2.0",
+          "react/jsx-runtime": "https://esm.sh/react@19.2.0/jsx-runtime",
+          "react-dom": "https://esm.sh/react-dom@19.2.0?external=react",
+          "react-dom/client": "https://esm.sh/react-dom@19.2.0/client?external=react",
+          "three": "https://esm.sh/three@0.181.2",
+          "three/addons/": "https://esm.sh/three@0.181.2/examples/jsm/",
+          "@react-three/fiber": "https://esm.sh/@react-three/fiber@9.5.0?external=react,react-dom,three"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"><p class="boot" role="status">Opening the workshop…</p></div>
+    <noscript>This experiment needs JavaScript and WebGL. Enable JavaScript to explore the chest.</noscript>
+    <script type="module">
+      import('./app.mjs').catch((error) => {
+        console.error(error);
+        document.getElementById('root').textContent = 'The workshop could not load. Check your connection to esm.sh, then refresh.';
+      });
+    </script>
+  </body>
+</html>
