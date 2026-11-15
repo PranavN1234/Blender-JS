@@ -30,3 +30,13 @@
 - Browser verification is pending: local sockets are blocked (`listen EPERM`).
 - Private Sites registration is recorded in the demo manifest, but publication is blocked because the shell cannot resolve the hosting Git endpoint. No live URL is available yet.
 - Work is authored in the original writable `Documents/blender` workspace; the user's separate `Documents/Blender-JS` checkout must pull the GitHub commit.
+
+## 2026-11-15 — Complete animation comparison
+
+- Added `OpenChest` and `CloseChest` keyframe actions to the Blender file and exported them to GLB.
+- Arranged NLA strips into a playable open/hold/close timeline (frames 1–101, 30 fps).
+- Added a website selector comparing code-driven rotation with sampling Blender-authored clips through Three.js's animation mixer. Both modes support the slider, reversals, and reduced motion.
+- Added a Blender-rendered loading preview and a dependency-free static build.
+- Build checks verify both clips, their lid-only targets, increasing keyframe times, zero closed pose, and 100-degree opening quaternions.
+- Ran both asset scripts in a fresh background Blender process and confirmed the resulting geometry, hierarchy, animations, and accessors match the delivered GLB.
+- Browser execution and hosted publication remain unverified due to the previously recorded environment restrictions.

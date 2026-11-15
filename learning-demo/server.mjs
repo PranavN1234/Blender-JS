@@ -4,7 +4,7 @@ import { dirname, extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), 'public');
-const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.mjs': 'text/javascript', '.glb': 'model/gltf-binary', '.svg': 'image/svg+xml' };
+const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.mjs': 'text/javascript', '.glb': 'model/gltf-binary', '.svg': 'image/svg+xml', '.png': 'image/png' };
 const port = Number(process.env.PORT || 5173);
 const server = http.createServer(async (req, res) => {
   try {

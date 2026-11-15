@@ -21,7 +21,7 @@ Open http://localhost:5173. No dependency installation is needed; the browser lo
 4. Display it in a browser and open or close the lid on click using code.
 5. Author the opening animation in Blender and play the exported clip in the browser.
 
-The model has been imported and its lid normalized to a closed pose. The browser implementation has click-to-open, an angle slider, hinge visualization, and wireframe controls. JavaScript and GLB structure checks pass; browser verification remains pending because the authoring session blocks local server sockets.
+The model has been imported and its lid normalized to a closed pose. The browser implementation has click-to-open, an angle slider, hinge visualization, wireframe controls, and a choice of JavaScript motion or Blender-authored clips. The editable Blender file also has a playable open/hold/close timeline. JavaScript checks and the validated static build pass; browser verification remains pending because the authoring session blocks local server sockets.
 
 ## Files
 

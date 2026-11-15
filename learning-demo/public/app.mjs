@@ -1,7 +1,7 @@
-import React, { Component, Suspense, useEffect, useRef, useState } from 'react';
+import React, { Component, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
-import { MathUtils, Vector3 } from 'three';
+import { AnimationMixer, LoopOnce, MathUtils, Vector3 } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js?external=three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js?external=three';
 
@@ -51,10 +51,25 @@ function CameraControls({ resetKey }) {
   return null;
 }
 
-function Chest({ angle, motion, wireframe, hinge, onToggle, onReady }) {
-  const { scene } = useLoader(GLTFLoader, MODEL_URL);
+function Chest({ angle, motion, source, wireframe, hinge, onToggle, onReady }) {
+  const { scene, animations } = useLoader(GLTFLoader, MODEL_URL);
   const lid = scene.getObjectByName('Lid');
   if (!lid) throw new Error('The exported model must contain a node named Lid.');
+  const shownAngle = useRef(0);
+  const activeAction = useRef(null);
+  const player = useMemo(() => {
+    const mixer = new AnimationMixer(scene);
+    const open = animations.find((clip) => clip.name === 'OpenChest');
+    const close = animations.find((clip) => clip.name === 'CloseChest');
+    if (!open || !close) throw new Error('Missing OpenChest or CloseChest animation clip.');
+    return { mixer, open: mixer.clipAction(open), close: mixer.clipAction(close) };
+  }, [scene, animations]);
+
+  useEffect(() => () => {
+    player.mixer.stopAllAction();
+    player.mixer.uncacheRoot(scene);
+    activeAction.current = null;
+  }, [player, scene]);
 
   useEffect(() => {
     scene.traverse((object) => {
@@ -75,12 +90,33 @@ function Chest({ angle, motion, wireframe, hinge, onToggle, onReady }) {
   }, [scene, wireframe]);
 
   useFrame((_, delta) => {
-    // The GLB is closed at 0. Its hinge runs along local X.
-    // A negative rotation lifts the front of the lid toward the back.
-    const target = -MathUtils.degToRad(angle);
-    lid.rotation.x = motion
-      ? MathUtils.damp(lid.rotation.x, target, 8, Math.min(delta, 0.05))
-      : target;
+    const opening = angle >= shownAngle.current;
+    const next = motion
+      ? MathUtils.damp(shownAngle.current, angle, 8, Math.min(delta, 0.05))
+      : angle;
+    shownAngle.current = Math.abs(next - angle) < 0.02 ? angle : next;
+
+    if (source === 'clip') {
+      const action = opening ? player.open : player.close;
+      if (activeAction.current !== action) {
+        activeAction.current?.stop();
+        action.reset().setLoop(LoopOnce, 1).play();
+        action.clampWhenFinished = true;
+        action.paused = true;
+        activeAction.current = action;
+      }
+      // Sample a real Blender-authored clip. Seeking lets the slider scrub it,
+      // and a new click can reverse direction smoothly before a clip finishes.
+      const progress = shownAngle.current / 100;
+      action.time = (opening ? progress : 1 - progress) * action.getClip().duration;
+      action.enabled = true;
+      player.mixer.update(0);
+    } else {
+      activeAction.current?.stop();
+      activeAction.current = null;
+      // Code mode rotates the GLB's named lid directly around local X.
+      lid.rotation.x = -MathUtils.degToRad(shownAngle.current);
+    }
   });
 
   return h('group', null,
@@ -140,6 +176,7 @@ function App() {
   const [motion, setMotion] = useState(() => !matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [wireframe, setWireframe] = useState(false);
   const [hinge, setHinge] = useState(false);
+  const [source, setSource] = useState('code');
   const [resetKey, setResetKey] = useState(0);
   const toggle = () => setAngle((current) => current > 50 ? 0 : 100);
   const state = angle === 0 ? 'Closed' : angle === 100 ? 'Open' : 'Exploring';
@@ -167,6 +204,14 @@ function App() {
             h('input', { id: 'angle', type: 'range', min: 0, max: 100, step: 1, value: angle, disabled: !loaded,
               style: { '--progress': `${angle}%` }, onChange: (event) => setAngle(Number(event.target.value)) }),
             h('div', { className: 'range-ends' }, h('span', null, 'CLOSED'), h('span', null, 'OPEN')),
+            h('div', { className: 'source-control' },
+              h('label', { htmlFor: 'motion-source' }, 'Animate with'),
+              h('select', { id: 'motion-source', value: source, disabled: !loaded, onChange: (event) => setSource(event.target.value) },
+                h('option', { value: 'code' }, 'JavaScript rotation'),
+                h('option', { value: 'clip' }, 'Blender animation clips'))),
+            h('p', { className: 'source-description' }, source === 'code'
+              ? 'The browser computes the lid’s rotation.'
+              : 'The browser plays keyframes exported from Blender.'),
             h('div', { className: 'options' },
               h(Toggle, { label: 'Show hinge', checked: hinge, onChange: setHinge }),
               h(Toggle, { label: 'Wireframe', checked: wireframe, onChange: setWireframe }),
@@ -177,7 +222,8 @@ function App() {
             h('span', { className: 'stage-label' }, 'LIVE 3D PREVIEW'),
             h('span', { className: 'status', role: 'status' }, h('span', { className: 'dot' }), loaded ? state : 'Loading model…')),
           h('div', { className: 'canvas-wrap' },
-            h(SceneBoundary, null, h(Scene, { angle, motion, wireframe, hinge, onToggle: toggle, onReady: ready, resetKey }))),
+            !loaded && h('img', { className: 'model-fallback', src: './models/chest-preview.png', alt: 'A wooden treasure chest with metal bands and a gold lock', onError: (event) => { event.currentTarget.hidden = true; } }),
+            h(SceneBoundary, null, h(Scene, { angle, motion, source, wireframe, hinge, onToggle: toggle, onReady: ready, resetKey }))),
           h('div', { className: 'stage-bottom' },
             h('span', null, 'Drag to orbit · Scroll to zoom'),
             h('button', { className: 'reset', onClick: () => setResetKey((key) => key + 1) }, '↺ Reset view')))),
@@ -188,7 +234,7 @@ function App() {
         h('article', null, h('span', { className: 'step-number' }, '02'), h('h2', null, 'The hinge'),
           h('p', null, 'The lid’s origin sits at the back edge. Toggle “Show hinge” to see the axis it rotates around.')),
         h('article', null, h('span', { className: 'step-number' }, '03'), h('h2', null, 'The interaction'),
-          h('p', null, 'React handles the click. Three.js rotates the lid a little each frame until it reaches the selected angle.')))),
+          h('p', null, 'React handles the click. Choose a rotation computed in code or animation keyframes exported from Blender. Both use the same lid and hinge.')))),
     h('footer', null,
       h('span', null, 'Built to learn. Made to explore.'),
       h('a', { href: 'https://shuriken.studio/models/props/low-poly-treasure-chest', target: '_blank', rel: 'noreferrer' }, 'Chest model by Shuriken Studio ↗')),
