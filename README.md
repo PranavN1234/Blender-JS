@@ -4,6 +4,8 @@ Repository: https://github.com/PranavN1234/Blender-JS
 
 A learning workspace for bringing Blender models and animations into a React Three Fiber browser demo, followed by a stylized portfolio room.
 
+Start learning with the [Chest Lab study guide](docs/chest-study-guide.md): the actual model, Python scripts, browser code, exercises, and troubleshooting.
+
 ## First exercise: interactive treasure chest
 
 The first demo is in [`learning-demo/`](learning-demo/README.md). It includes the imported model, editable Blender source, and a React Three Fiber website.

@@ -2,6 +2,8 @@
 
 A small React Three Fiber website using an imported treasure chest. Click the model or the button to open or close the lid. Use the slider to choose an angle; turn on the hinge marker or wireframe to inspect it. Switch between JavaScript rotation and Blender-authored animation clips.
 
+For a guided walkthrough of every part, read the [Chest Lab study guide](../docs/chest-study-guide.md).
+
 ## Run
 
 Requires Node.js (18 or newer) and an internet connection for pinned JavaScript dependencies and optional fonts.

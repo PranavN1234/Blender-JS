@@ -40,3 +40,9 @@
 - Build checks verify both clips, their lid-only targets, increasing keyframe times, zero closed pose, and 100-degree opening quaternions.
 - Ran both asset scripts in a fresh background Blender process and confirmed the resulting geometry, hierarchy, animations, and accessors match the delivered GLB.
 - Browser execution and hosted publication remain unverified due to the previously recorded environment restrictions.
+
+## 2026-11-15 — Study guide
+
+- Added `docs/chest-study-guide.md` with a file-by-file learning path across Blender, Python asset preparation, keyframes/NLA, GLB, React state, Three.js interaction, animation playback, and build validation.
+- Included progressive exercises, self-check answers, official references, and debugging guidance for module-loading failures.
+- The reported startup error did not include a browser error trace, so its specific cause remains unconfirmed. A move to locally installed dependencies was discussed but not implemented; the guide describes the actual CDN-based setup.
